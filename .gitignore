@@ -1,0 +1,22 @@
+# Build-Ausgabe
+build/
+.gradle/
+
+# lokale Compile-Helfer
+.build/
+.lib/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# lokale Notizen, nicht Teil des Repos
+murder.md
