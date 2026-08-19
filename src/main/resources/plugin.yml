@@ -1,0 +1,59 @@
+name: MurderMystery
+version: '${version}'
+main: com.lucas.murder.MurderPlugin
+api-version: '1.21'
+author: LucasTHCR
+website: dc.gg/paperstream
+description: Traditional Murder Mystery (Innocent / Detective / Murderer)
+folia-supported: false
+
+softdepend:
+  - Citizens
+  - PlaceholderAPI
+  - Vault
+  - AdvancedReplay
+  - WorldEdit
+  - FancyNpcs
+  - ZNPCsPlus
+  - CorpseReborn
+
+commands:
+  murder:
+    description: Main command of the Murder Mystery plugin
+    aliases: [mm, murdermystery]
+    usage: /murder help
+
+permissions:
+  murder.play:
+    description: May play and use the player commands
+    default: true
+  murder.shop:
+    description: May open /murder shop
+    default: true
+  murder.stats:
+    description: May use /murder stats
+    default: true
+  murder.spectate:
+    description: May spectate running rounds
+    default: true
+  murder.replay:
+    description: May watch own replays
+    default: true
+  murder.replay.others:
+    description: May watch replays of rounds the player was not part of
+    default: op
+  murder.replay.admin:
+    description: May record, delete and clean up replays
+    default: op
+  murder.join.full:
+    description: May join full arenas
+    default: op
+  murder.admin:
+    description: All admin and setup commands
+    default: op
+  murder.admin.npc:
+    description: NPC commands (falls back to murder.admin)
+    default: op
+  murder.bypass.commands:
+    description: Ignores the blocked commands while in a game
+    default: op

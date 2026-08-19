@@ -1,0 +1,49 @@
+# ============================================================
+#  MurderMystery - arenas (written at runtime)
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Do not edit while the server is running - use the commands
+#  or /murder setup, otherwise your changes are overwritten.
+#
+#  Example of a finished arena:
+#
+#  arenas:
+#    classic:
+#      enabled: true
+#      displayname: "&aClassic"
+#      author: "LucasTHCR"
+#      icon: GRASS_BLOCK
+#      min-players: 4
+#      max-players: 16
+#      time: 480
+#      spawns:
+#        - {world: mm_classic, x: 10.5, y: 70.0, z: -3.5, yaw: 0.0, pitch: 0.0}
+#      spectator: {world: mm_classic, x: 0.5, y: 90.0, z: 0.5, yaw: 0.0, pitch: 20.0}
+#      gold:
+#        - {world: mm_classic, x: 14.5, y: 70.0, z: 2.5}
+#      altar: {world: mm_classic, x: 0.5, y: 55.0, z: 0.5}
+#      potion-stations:
+#        - {world: mm_classic, x: -8.5, y: 55.0, z: 3.5}
+#      bounds:
+#        world: mm_classic
+#        pos1: {x: -60, y: 40, z: -60}
+#        pos2: {x: 60, y: 120, z: 60}
+#      zones:
+#        pit:
+#          type: INSTANT
+#          message: death-void
+#          pos1: {x: -20, y: 0, z: -20}
+#          pos2: {x: 20, y: 35, z: 20}
+#        pond:
+#          type: SAFE
+#          pos1: {x: 4, y: 68, z: 4}
+#          pos2: {x: 12, y: 72, z: 12}
+#      overrides:
+#        round-time: 300
+#        gold.respawn-seconds: 15
+#        death-rules.water: false
+# ============================================================
+config-version: 1
+
+arenas: {}
+signs: []

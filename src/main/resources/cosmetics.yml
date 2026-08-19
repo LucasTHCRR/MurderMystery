@@ -1,0 +1,73 @@
+# ============================================================
+#  MurderMystery - cosmetics
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Cosmetics must NEVER decide a round. A flashy knife skin is
+#  only visible while the knife is drawn - exactly when the role
+#  is blown anyway. No clothing skins, no permanent particles.
+# ============================================================
+config-version: 1
+
+categories:
+  knife:
+    title: "&cKnife skins"
+    slot: 20
+    items:
+      knife_default:
+        name: "&7Classic knife"
+        material: IRON_SWORD
+        price: 0
+        permission: ""
+      knife_gold:
+        name: "&6Golden knife"
+        material: GOLDEN_SWORD
+        price: 500
+        permission: ""
+      knife_ancient:
+        name: "&5Kali's blade"
+        material: NETHERITE_SWORD
+        price: 2500
+        permission: murder.cosmetics.ancient
+  bow:
+    title: "&9Bow skins"
+    slot: 22
+    items:
+      bow_default:
+        name: "&7Classic bow"
+        material: BOW
+        price: 0
+        permission: ""
+      bow_crossbow:
+        name: "&fCrossbow"
+        material: CROSSBOW
+        price: 900
+        permission: ""
+      bow_ancient:
+        name: "&5Ancient bow"
+        material: BOW
+        price: 2000
+        permission: ""
+  death:
+    title: "&eDeath effects"
+    slot: 24
+    items:
+      death_none:
+        name: "&7None"
+        effect: NONE
+        price: 0
+        permission: ""
+      death_lightning:
+        name: "&eLightning strike"
+        effect: LIGHTNING
+        price: 1500
+        permission: ""
+      death_explosion:
+        name: "&cExplosion"
+        effect: EXPLOSION
+        price: 1200
+        permission: ""
+      death_souls:
+        name: "&bSouls"
+        effect: SOUL
+        price: 1000
+        permission: ""

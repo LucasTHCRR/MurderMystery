@@ -1,0 +1,43 @@
+# ============================================================
+#  MurderMystery - the mystery potion
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Brewing stations sell an unknown potion for 1 gold. What it
+#  does is only revealed after drinking it. Same color means
+#  same effect - but only inside this round.
+# ============================================================
+config-version: 1
+
+mystery-potion:
+  enabled: true
+  cost: 1                    # gold per potion
+  cooldown-seconds: 5
+  max-per-round: 10          # 0 = unlimited
+  # PLAYER = everyone has to try for themselves
+  # GLOBAL = once someone drank it, everyone knows
+  knowledge: PLAYER
+  reroll-each-round: true
+  allow-roles: [INNOCENT, DETECTIVE, MURDERER]
+  drop-allowed: false        # no passing potions to other players
+
+  # Colors that are randomly mapped onto effects every round
+  colors: [RED, BLUE, GREEN, YELLOW, PURPLE, PINK, ORANGE, CYAN, WHITE, BLACK]
+
+  # Effect pool - more effects than colors is fine, they are drawn
+  effects:
+    speed:        {effect: SPEED,        amplifier: 1, duration: 30, good: true}
+    jump:         {effect: JUMP_BOOST,   amplifier: 2, duration: 30, good: true}
+    invisibility: {effect: INVISIBILITY, amplifier: 0, duration: 15, good: true,
+                   allow-roles: [INNOCENT, DETECTIVE]}   # too strong for the murderer
+    resistance:   {effect: RESISTANCE,   amplifier: 4, duration: 8,  good: true}
+    night_vision: {effect: NIGHT_VISION, amplifier: 0, duration: 60, good: true}
+    blindness:    {effect: BLINDNESS,    amplifier: 0, duration: 8,  good: false}
+    slowness:     {effect: SLOWNESS,     amplifier: 2, duration: 15, good: false}
+    weakness:     {effect: WEAKNESS,     amplifier: 1, duration: 20, good: false}
+    nausea:       {effect: NAUSEA,       amplifier: 0, duration: 12, good: false}
+    glowing:      {effect: GLOWING,      amplifier: 0, duration: 10, good: false}
+
+  # Ratio when rolling the table
+  ratio:
+    good: 60
+    bad: 40

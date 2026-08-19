@@ -1,0 +1,139 @@
+# ============================================================
+#  MurderMystery - sidebar, bossbar, actionbar and tablist
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Everything can be configured per game state AND per role.
+#  Max 15 sidebar lines, longer lists are cut and reported.
+#  Placeholders: see §11.2 of the concept.
+# ============================================================
+config-version: 1
+
+sidebar:
+  enabled: true
+  # 20 = once per second, 4 = smooth timers
+  update-ticks: 20
+  # Give a foreign sidebar (lobby plugin) back when the player leaves
+  restore-previous: true
+
+  title:
+    animated: true
+    interval-ticks: 3
+    frames:
+      - "&c&lMURDER"
+      - "&f&lMURDER"
+      - "&c&lMURDER"
+      - "&4&lMURDER"
+
+  lobby:
+    - "&7&m                    "
+    - "&fMap: &a%map%"
+    - "&fPlayers: &a%current%&7/&a%max%"
+    - "&fStarting in: &a%countdown%"
+    - ""
+    - "&fMode: &aClassic"
+    - "&7&m                    "
+    - "&edc.gg/paperstream"
+
+  countdown:
+    inherit: lobby
+
+  ingame:
+    default:
+      - "&7&m                    "
+      - "&fTime: &c%time%"
+      - "&fRole: %role%"
+      - ""
+      - "&fAlive: &a%alive%&7/&a%total%"
+      - "&fGold: &e%gold%&7/&e%gold_needed%"
+      - "&7&m                    "
+      - "&edc.gg/paperstream"
+    innocent:
+      - "&7&m                    "
+      - "&fTime: &c%time%"
+      - "&fRole: &aInnocent"
+      - ""
+      - "&fAlive: &a%alive%&7/&a%total%"
+      - "&fGold: &e%gold%&7/&e%gold_needed%"
+      - "&fBow: %bow_status%"
+      - "&7&m                    "
+      - "&edc.gg/paperstream"
+    detective:
+      - "&7&m                    "
+      - "&fTime: &c%time%"
+      - "&fRole: &9Detective"
+      - ""
+      - "&fAlive: &a%alive%&7/&a%total%"
+      - "&fArrow: %arrow_status%"
+      - "&7&m                    "
+      - "&edc.gg/paperstream"
+    murderer:
+      - "&7&m                    "
+      - "&fTime: &c%time%"
+      - "&fRole: &cMurderer"
+      - ""
+      - "&fLeft: &a%alive%"
+      - "&fKills: &c%kills%"
+      - "&fKnife: %knife_status%"
+      - "&7&m                    "
+      - "&edc.gg/paperstream"
+
+  spectator:
+    - "&7&m                    "
+    - "&7You are dead"
+    - "&fYou were: %role%"
+    - ""
+    - "&fAlive: &a%alive%"
+    - "&fTime: &c%time%"
+    - "&7&m                    "
+    - "&edc.gg/paperstream"
+
+  ending:
+    - "&7&m                    "
+    - "&fWinner: %winner%"
+    - "&fMurderer was: &c%murderer%"
+    - ""
+    - "&fNext round: &a%countdown%"
+    - "&7&m                    "
+    - "&edc.gg/paperstream"
+
+bossbar:
+  enabled: true
+  lobby:
+    text: "&fStarting in &a%countdown%"
+    color: GREEN
+    style: SEGMENTED_10
+    progress: countdown       # countdown | time | players | full
+  ingame:
+    text: "&cMurder &8| &f%time% &8| &7Alive: &a%alive%"
+    color: RED
+    style: SOLID
+    progress: time
+    warn-at-seconds: 60
+    warn-color: YELLOW
+    warn-text: "&e&lOnly %time% left!"
+  ending:
+    text: "&7Next round in &a%countdown%"
+    color: WHITE
+    style: SOLID
+    progress: full
+
+actionbar:
+  enabled: true
+  ingame:
+    innocent: "&6Gold: &e%gold%&7/&e%gold_needed% &8| &fTime: &c%time%"
+    detective: "&9Arrow: %arrow_status% &8| &fTime: &c%time%"
+    murderer: "&cKnife: %knife_status% &8| &fTime: &c%time%"
+  spectator: "&7Spectator &8| &fAlive: &a%alive%"
+
+tablist:
+  enabled: true
+  header:
+    - "&c&lMURDER MYSTERY"
+    - "&7%map%"
+  footer:
+    - ""
+    - "&fAlive: &a%alive%&7/&a%total% &8| &fTime: &c%time%"
+    - "&edc.gg/paperstream"
+  # Never show roles here
+  show-roles: false
+  spectator-prefix: "&8[Dead] "

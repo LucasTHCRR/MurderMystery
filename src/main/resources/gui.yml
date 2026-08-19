@@ -1,0 +1,62 @@
+# ============================================================
+#  MurderMystery - menus
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Actions: OPEN:<menu>, CLOSE, BUY:<id>, EQUIP:<id>,
+#           JOIN:<arena>, VOTE:<arena>, COMMAND:<command>, NONE
+# ============================================================
+config-version: 1
+
+shop:
+  title: "&8Murder &cCosmetics"
+  rows: 6
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  items:
+    knives:  {slot: 20, material: IRON_SWORD,   name: "&cKnife skins",   action: "OPEN:knife"}
+    bows:    {slot: 22, material: BOW,          name: "&9Bow skins",     action: "OPEN:bow"}
+    effects: {slot: 24, material: BLAZE_POWDER, name: "&eDeath effects", action: "OPEN:death"}
+    close:   {slot: 49, material: BARRIER,      name: "&cClose",         action: "CLOSE"}
+
+category:
+  title: "&8%category%"
+  rows: 6
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  back: {slot: 49, material: ARROW, name: "&7Back", action: "OPEN:shop"}
+  # Cosmetic entries are filled in from cosmetics.yml
+  start-slot: 10
+
+vote:
+  title: "&8Choose a map"
+  rows: 3
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  # Icons come from arenas.yml (/murder set <arena> icon)
+  start-slot: 10
+
+stats:
+  title: "&8Stats of &f%player%"
+  rows: 3
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+
+spectate:
+  title: "&8Watch a round"
+  rows: 3
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  start-slot: 10
+
+replay:
+  title: "&8Your recordings"
+  rows: 3
+  filler:
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  start-slot: 10

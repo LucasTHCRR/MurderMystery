@@ -1,0 +1,75 @@
+# ============================================================
+#  MurderMystery - every item in one place
+#  Author: LucasTHCR  |  dc.gg/paperstream
+# ============================================================
+config-version: 1
+
+knife:
+  material: IRON_SWORD
+  name: "&cKnife"
+  lore:
+    - "&7Kill every innocent"
+    - "&7Right click to throw"
+  slot: 0
+  unbreakable: true
+  hide-flags: true
+  glowing: false
+
+bow:
+  material: BOW
+  name: "&9Bow"
+  lore:
+    - "&7One arrow, then reload"
+  slot: 1
+  unbreakable: true
+  hide-flags: true
+
+arrow:
+  material: ARROW
+  name: "&fArrow"
+  slot: 9
+
+gold:
+  material: GOLD_INGOT
+  name: "&6Gold"
+  glowing: true
+
+wand:
+  material: GOLDEN_AXE
+  name: "&cMurder Selection"
+  lore:
+    - "&7Left click &8- &fPos1"
+    - "&7Right click &8- &fPos2"
+  hide-flags: true
+  glowing: true
+
+lobby:
+  leave:
+    material: RED_BED
+    name: "&cLeave the game"
+    slot: 8
+  vote:
+    material: PAPER
+    name: "&eChoose a map"
+    slot: 4
+  shop:
+    material: CHEST
+    name: "&6Cosmetics"
+    slot: 0
+
+spectator:
+  teleporter:
+    material: COMPASS
+    name: "&fJump to players"
+    slot: 0
+  leave:
+    material: RED_BED
+    name: "&cBack to the lobby"
+    slot: 8
+
+potion:
+  material: POTION
+  name: "&5Unknown potion"
+  lore:
+    - "&7Drink it and find out"
+  hide-flags: true

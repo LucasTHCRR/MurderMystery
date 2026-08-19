@@ -1,0 +1,33 @@
+# ============================================================
+#  MurderMystery - NPCs (written at runtime)
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Create NPCs with /murder npc create <type> [arena].
+#  Ids are handed out through next-id and are never reused.
+#
+#  Example:
+#
+#  npcs:
+#    '1':
+#      type: JOIN
+#      arena: classic
+#      name: "&c&lMurder Mystery"
+#      skin:
+#        owner: Notch
+#        value: "eyJ0ZXh0dXJlcyI6..."
+#        signature: "Xk9Q..."
+#      location: {world: lobby, x: 12.5, y: 65.0, z: -4.5, yaw: 180.0, pitch: 0.0}
+#      pose: STANDING
+#      look-at-players: true
+#      equipment:
+#        hand: IRON_SWORD
+#      hologram:
+#        - "&c&lMURDER MYSTERY"
+#        - "&f%arena% &8| &7%state%"
+#        - "&7Players: &a%current%&7/&a%max%"
+#        - "&eRight click to join"
+# ============================================================
+config-version: 1
+
+next-id: 1
+npcs: {}

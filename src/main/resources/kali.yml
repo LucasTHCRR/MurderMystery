@@ -1,0 +1,241 @@
+# ============================================================
+#  MurderMystery - Kali: altar, favor, blessings and curses
+#  Author: LucasTHCR  |  dc.gg/paperstream
+#
+#  Sacrifice items at the altar to raise your favor, then pray
+#  with an empty hand. High favor means a blessing, low favor
+#  means a curse. Investing gold lowers the risk.
+# ============================================================
+config-version: 1
+
+kali:
+  enabled: true
+  # Block that is clicked (Hypixel uses an end portal frame)
+  altar-block: END_PORTAL_FRAME
+  # Additionally usable as an NPC: /murder npc create KALI <arena>
+  npc-enabled: true
+
+  start-favor: 0
+  max-favor: 20
+  pray-cost: 3
+  cooldown-seconds: 5
+  max-prays-per-round: 0        # 0 = unlimited as long as there is favor
+  allow-roles: [INNOCENT, DETECTIVE, MURDERER]
+  # This much gold sacrificed guarantees a blessing
+  guaranteed-after-gold: 10
+
+  # Blessing chance per favor level, values in between are interpolated
+  favor-curve:
+    0: 10                       # 0 favor -> 10 % blessing, 90 % curse
+    3: 35
+    6: 65
+    10: 85
+    15: 95
+    20: 100
+
+  particles:
+    enabled: true
+    radius: 3
+    levels:
+      low:   {max-favor: 2,  particle: FLAME,          color: "#FF3300"}
+      mid:   {max-favor: 5,  particle: FLAME,          color: "#FF9900"}
+      good:  {max-favor: 9,  particle: HAPPY_VILLAGER, color: "#FFFF33"}
+      great: {max-favor: 99, particle: HAPPY_VILLAGER, color: "#33FF33"}
+
+  # What Kali accepts as an offering
+  gifts:
+    GOLD_INGOT: {favor: 1, message: kali-gift-accepted}
+    FILLED_MAP: {favor: 5, message: kali-gift-kindly}
+    MAP:        {favor: 5, message: kali-gift-kindly}
+    BOW:        {favor: 5, message: kali-gift-kindly}
+    ARROW:      {favor: 2, message: kali-gift-accepted}
+    IRON_SWORD: {favor: 5, message: kali-gift-kindly}
+
+  suspense:
+    enabled: true
+    ticks: 40
+    sound: BLOCK_NOTE_BLOCK_HAT
+    end-sound-blessing: ENTITY_PLAYER_LEVELUP
+    end-sound-curse: ENTITY_WITHER_SPAWN
+
+  announce: SELF                # SELF | NEARBY | ALL | NONE
+  announce-radius: 8
+
+  # ---- Blessings: chances among each other, only used once "blessing" was rolled
+  blessings:
+    reveal_detective:
+      enabled: true
+      chance: 10.0
+      type: REVEAL_DETECTIVE
+      name: "&a&lTHE DETECTIVE"
+      message: "%prefix%&aKali whispers: the detective is &f%player%&a."
+      # Extremely strong for the murderer - block it here if you want
+      deny-roles: []
+
+    gold_rush:
+      enabled: true
+      chance: 20.0
+      type: GOLD_MULTIPLIER
+      multiplier: 3
+      duration: 0               # 0 = until the round ends
+      name: "&6&lGOLD BLESSING"
+      message: "%prefix%&6Every gold counts &f3x &6now."
+
+    single_shot:
+      enabled: true
+      chance: 20.0
+      type: SINGLE_SHOT
+      arrows: 1
+      name: "&9&lONE SHOT"
+
+    triple_shot:
+      enabled: true
+      chance: 8.0
+      type: SINGLE_SHOT
+      arrows: 3
+      name: "&9&lTHREE SHOTS"
+
+    ancient_bow:
+      enabled: true
+      chance: 5.0
+      type: ANCIENT_BOW
+      infinite: true
+      cooldown: 0
+      name: "&5&lKALI'S ANCIENT BOW"
+      message: "%prefix%&5Infinite arrows, no reload."
+
+    extra_life:
+      enabled: true
+      chance: 10.0
+      type: EXTRA_LIFE
+      lives: 1
+      name: "&c&lEXTRA LIFE"
+
+    cleanse:
+      enabled: true
+      chance: 12.0
+      type: CLEANSE
+      name: "&b&lCLEANSING"
+      message: "%prefix%&bAll curses were lifted from you."
+
+    safe_teleport:
+      enabled: true
+      chance: 8.0
+      type: SAFE_TELEPORT
+      duration: 10
+      name: "&d&lREFUGE"
+
+    show_players:
+      enabled: true
+      chance: 7.0
+      type: SHOW_PLAYERS
+      duration: 5
+      name: "&e&lALL SEEING"
+      message: "%prefix%&eYou see every player for &f5 seconds&e."
+
+  # ---- Curses ----
+  curses:
+    mute:
+      enabled: true
+      chance: 8.0
+      type: MUTE
+      duration: 0               # 0 = until the round ends
+      name: "&8&lSILENCED"
+
+    praise_or_die:
+      enabled: true
+      chance: 6.0
+      type: PRAISE_OR_DIE
+      interval: 20
+      phrase: "Praise Kali"
+      name: "&4&lPRAISE KALI"
+      message: "%prefix%&4Type &f\"Praise Kali\" &4every &f20s &4- or die."
+
+    scramble_scoreboard:
+      enabled: true
+      chance: 8.0
+      type: SCRAMBLE_SCOREBOARD
+      duration: 60
+      name: "&8&lCONFUSION"
+
+    fill_inventory:
+      enabled: true
+      chance: 12.0
+      type: FILL_INVENTORY
+      fill-material: COBWEB
+      duration: 30              # 0 = until the round ends
+      keep: [FILLED_MAP, MAP, BOW, ARROW, IRON_SWORD, GOLD_INGOT]
+      block-pickup: [GOLD_INGOT, BOW, ARROW]
+      name: "&8&lFULL INVENTORY"
+      message: "%prefix%&7Your inventory is overflowing - and you cannot pick anything up."
+
+    spawn_spiders:
+      enabled: true
+      chance: 8.0
+      type: SPAWN_SPIDERS
+      amount: 3
+      duration: 20
+      name: "&8&lSPIDERS"
+
+    fake_sword:
+      enabled: true
+      chance: 10.0
+      type: FAKE_SWORD
+      duration: 20
+      name: "&c&lFALSE BLADE"
+      message: "%prefix%&cYou look like the murderer. Good luck."
+
+    slowness:
+      enabled: true
+      chance: 12.0
+      type: SLOWNESS
+      amplifier: 1
+      duration: 20
+      name: "&7&lSLOW"
+
+    no_gold:
+      enabled: true
+      chance: 12.0
+      type: NO_GOLD
+      duration: 45
+      name: "&6&lNO GOLD"
+      message: "%prefix%&7You cannot pick up gold for &f45 seconds&7."
+
+    chat_spam:
+      enabled: true
+      chance: 6.0
+      type: CHAT_SPAM
+      duration: 20
+      interval-ticks: 20
+      lines:
+        - "&5Kali sees you."
+        - "&5Kali is displeased."
+        - "&5Kali waits."
+      name: "&5&lVOICES"
+
+    damage_when_still:
+      enabled: true
+      chance: 8.0
+      type: DAMAGE_WHEN_STILL
+      duration: 30
+      still-seconds: 3
+      damage: 1.0
+      name: "&c&lRESTLESS"
+
+    freeze:
+      enabled: true
+      chance: 6.0
+      type: FREEZE
+      duration: 5
+      allow-look: true
+      safe-only: true           # never freeze above a death zone
+      name: "&b&lFROZEN"
+
+    doom:
+      enabled: true
+      chance: 4.0
+      type: DOOM
+      seconds: 60
+      cleansable: true
+      name: "&4&lDOOMED"
+      message: "%prefix%&4You die in &f60 seconds&4. Go find a blessing."

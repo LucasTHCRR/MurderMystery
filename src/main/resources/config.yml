@@ -1,0 +1,539 @@
+# ============================================================
+#  MurderMystery - main configuration
+#  Author : LucasTHCR
+#  Support: dc.gg/paperstream
+#
+#  Apply changes with /murder reload (no restart needed).
+#  Every value in here can be overridden per arena, see
+#  "overrides" in arenas.yml.
+# ============================================================
+config-version: 1
+
+# Players per arena (defaults, can be overridden per arena)
+min-players: 4
+max-players: 16
+
+# Seconds the lobby counts down once min-players is reached
+lobby-countdown: 30
+
+# Seconds a round runs at most (0 = no limit)
+round-time: 480
+
+# Seconds between the end of a round and the arena reset
+ending-time: 10
+
+# Seconds a player has to wait between two /murder join attempts
+join-cooldown-seconds: 3
+
+roles:
+  # 1 murderer per started X players (8 -> 1 murderer up to 8, 2 from 9 on)
+  players-per-murderer: 8
+  # 1 detective per started X players
+  players-per-detective: 8
+  # Show the role as a title when the round starts
+  show-title: true
+  # Whoever was the murderer last round is skipped in the first draw
+  avoid-repeat-murderer: true
+
+gold:
+  respawn-seconds: 20
+  # Amount of gold that automatically grants a bow
+  bow-at: 10
+  murderer-can-collect: true
+  murderer-gets-bow: false
+  # Broadcasting a new bow reveals positions - keep it off
+  broadcast-bow: false
+  # Minimum amount of gold spawns the setup wizard asks for
+  min-spawns: 20
+  # Gold only counts while the player actually moves (anti afk-farming)
+  require-movement: true
+
+bow:
+  arrow-regen-seconds: 8
+  # Hitting an innocent with an arrow kills the shooter (Hypixel rule)
+  innocent-hit-kills-shooter: true
+  # The detective drops the bow on death - whoever picks it up is the new detective
+  detective-bow-drops: true
+  # How long a dropped bow stays on the ground (0 = until the round ends)
+  drop-seconds: 0
+
+knife:
+  throwable: true
+  throw-cooldown: 5
+  # Seconds until a thrown knife returns to the murderer (0 = never)
+  returns-after: 3
+  # Attack speed attribute while holding the knife (removes the 1.9 cooldown)
+  attack-speed: 24.0
+
+death-rules:
+  water: true
+  lava: true
+  fire: true
+  void-y: 0
+  max-y: 256
+  fall-damage: false
+  suffocation: true
+  cactus: true
+  # Seconds of invulnerability right after spawning
+  spawn-protection: 3
+
+nametags:
+  # No names above the heads during a round
+  hide-above-head: true
+  hide-in-lobby: false
+  hide-for-spectators: false
+  restore-previous-team: true
+  hide-on-corpse: true
+  hide-in-tablist: false
+  tablist-alias: "&7Player %number%"
+  hide-in-chat: false
+  chat-alias: "&7Player %number%"
+  hide-in-death-messages: false
+  # Reshuffle the numbers every round, otherwise "Player 3" becomes known
+  shuffle-aliases-each-round: true
+
+spectator:
+  fly: true
+  speed: 2
+  hidden-from-alive: true
+  separate-chat: true
+  can-see-roles: true
+
+chat:
+  enabled: true
+  # Only players in the same arena hear each other
+  scope: ARENA               # ARENA | GLOBAL | OFF
+  format: "&7%player%&8: &f%message%"
+  spectator-format: "&8[Dead] &7%player%&8: &f%message%"
+  dead-separate: true
+  dead-visible-to-alive: false
+  # Rank prefixes break the anonymity - keep them off
+  use-rank-prefixes: false
+  mute-during-round: false
+  mute-during-countdown: false
+  cooldown-ms: 1500
+  max-length: 120
+  block-repeated: true
+
+reconnect:
+  enabled: true
+  # How long the slot is kept
+  window-seconds: 60
+  # What happens once the window is over
+  on-timeout: DEATH          # DEATH | LEAVE
+  # The murderer must not be able to save himself by logging out
+  murderer-instant-death: true
+  restore-role: true
+  restore-gold: true
+  restore-inventory: true
+
+npcs:
+  enabled: true
+  provider: AUTO             # AUTO or a fixed name from the priority list
+  provider-priority:
+    - CITIZENS
+    - FANCYNPCS
+    - ZNPCSPLUS
+    - ADYESHACH
+    - EASYNPC
+    - NPCLIB
+    - PLAYERNPC
+    - ZNPCS
+    - INTERNAL
+  view-distance: 48
+  hologram-update-seconds: 1
+  hologram-line-height: 0.25
+  hologram-offset-y: 2.1
+  look-at-players: true
+  look-range: 10
+  collidable: false
+  invulnerable: true
+  gravity: false
+  glowing: false
+  click-cooldown-ms: 1000
+  skin-cache-hours: 24
+  default-skin: MHF_Steve
+
+corpses:
+  enabled: true
+  provider: AUTO
+  provider-priority:
+    - CORPSEREBORN
+    - CORPSE
+    - CORPSES
+    - DEADBODIES
+    - SIMPLECORPSE
+    - CITIZENS
+    - INTERNAL
+  seconds: 30
+  use-victim-skin: true
+  name: "&8x"
+  show-name: false
+  # NEVER true - it would reveal the detective
+  show-role: false
+  # Corpse plugins would hand out the bow or the knife
+  lootable: false
+  remove-on-round-end: true
+  blood:
+    enabled: true
+    particle: DUST
+    color: "#8B0000"
+    amount: 30
+  sound:
+    enabled: true
+    name: ENTITY_PLAYER_BIG_FALL
+    volume: 1.0
+    pitch: 0.8
+
+replay:
+  enabled: true
+  # Needs AdvancedReplay - without that plugin the whole branch stays silent
+  auto-record: true
+  record-from: GAME_START    # GAME_START | COUNTDOWN
+  record-until: GAME_END     # GAME_END | ENDING_DONE
+  min-players: 4
+  name-pattern: "mm_%arena%_%date%_%id%"
+  offer-after-round: true
+  watch-in-world: ""         # empty = play back inside the arena itself
+  # NEVER true - it would reveal the murderer mid-round
+  allow-during-round: false
+  speed-control: true
+  max-viewers: 10
+  keep-days: 3
+  keep-max: 200
+  cleanup-on-start: true
+
+rewards:
+  enabled: true
+  coins:
+    per-game: 5
+    per-kill: 10
+    murderer-win: 50
+    detective-win: 40
+    innocent-win: 25
+    hero: 30                 # last survivor
+    per-gold-collected: 1
+  vault:
+    enabled: false
+    multiplier: 1.0
+  level:
+    base: 100
+    growth: 25
+    broadcast-on-levelup: true
+
+cosmetics:
+  enabled: true
+  # Currency: coins earned across all rounds
+  currency: coins
+
+stats:
+  enabled: true
+  storage: FILE              # FILE | MYSQL
+  save-interval-seconds: 300
+  mysql:
+    host: localhost
+    port: 3306
+    database: murder
+    user: root
+    password: ""
+    table-prefix: "mm_"
+    use-ssl: false
+
+language:
+  default: en
+  # Take the language from the client settings of the player
+  per-player: false
+  fallback: en
+
+extras:
+  scoreboard: true
+  bossbar-timer: true
+  actionbar: true
+  titles: true
+  map-voting: true
+  join-signs: true
+  npcs: true
+  corpses: true
+  kali: true
+  mystery-potion: true
+  replays: true
+  cosmetics: true
+  stats: true
+  holograms: true
+  # Glowing after X seconds without moving (0 = off)
+  anti-camp-seconds: 45
+  spectator-mode: true
+  throwable-knife: true
+  detective-bow-drops: true
+  # Everyone alive glows during the last X seconds (0 = off)
+  last-man-standing-seconds: 60
+  auto-join-on-world-enter: false
+  disable-hunger: true
+  keep-items-on-death: false
+  # Max accounts from the same IP inside one arena (0 = unlimited)
+  max-accounts-per-ip: 0
+
+hooks:
+  placeholderapi: AUTO       # AUTO | true | false
+  vault: AUTO
+  citizens: AUTO
+  advancedreplay: AUTO
+  worldedit: AUTO
+  worldguard: AUTO
+
+cleanup:
+  # How far beyond the arena bounds entities are searched
+  radius-padding: 10
+  remove-arrows: true
+  remove-arrows-in-blocks: true
+  remove-dropped-items: true
+  # Only remove our own items (by tag) or everything in the area
+  only-tagged-items: true
+  remove-experience-orbs: true
+  remove-armorstands: true
+  extinguish-fire: true
+  reset-blocks: true
+  reset-weather: true
+  restore-inventories: true
+  clear-potion-effects: true
+  # Safety net: abort after this time and log an error
+  timeout-seconds: 10
+  # Remove leftovers of a crash on server start
+  on-startup: true
+  verify-after-reset: true
+
+world-reset:
+  mode: BLOCK_LOG            # NONE | BLOCK_LOG | COPY
+  template-folder: "templates/%arena%"
+  async-copy: true
+  unload-before-copy: true
+
+audit-log:
+  enabled: true
+  file: "logs/admin.log"
+
+# ============================================================
+#  Blocked commands
+# ============================================================
+# Only applies to players who are currently inside an arena or
+# its queue. Outside of a game nothing is blocked.
+blocked-commands:
+  enabled: true
+
+  # BLACKLIST = everything in 'blacklist' is blocked, the rest is allowed
+  # WHITELIST = only what is in 'whitelist' is allowed, everything else blocked
+  mode: BLACKLIST
+
+  # Whoever holds this permission may still use everything ("" = nobody)
+  bypass-permission: murder.bypass.commands
+
+  sound: BLOCK_NOTE_BLOCK_BASS
+
+  # In which game states commands are blocked
+  block-in:
+    lobby: true              # queue, waiting for players
+    countdown: true          # countdown is running
+    ingame: true             # round is running
+    ending: true             # round is over, reset is running
+
+  # These commands are ALWAYS allowed - no matter the mode.
+  # Otherwise WHITELIST could lock you out of your own game.
+  always-allowed:
+    - murder
+    - mm
+    - murdermystery
+
+  # Only relevant for mode: WHITELIST
+  whitelist:
+    - hub
+    - lobby
+    - leave
+    - spawn
+
+  # Only relevant for mode: BLACKLIST
+  # Namespaces (/minecraft:tp) and plugin aliases are resolved automatically.
+  blacklist:
+    # --- Teleportation / position ---
+    - tp
+    - tpa
+    - tpo
+    - tphere
+    - tpahere
+    - tpaccept
+    - tpdeny
+    - tpask
+    - tpall
+    - teleport
+    - back
+    - home
+    - homes
+    - sethome
+    - warp
+    - warps
+    - setwarp
+    - spawn
+    - setspawn
+    - top
+    - jump
+    - thru
+    - up
+    - world
+    - worlds
+    - mv
+    - mvtp
+    - multiverse
+    - rtp
+    - wild
+
+    # --- Game mode / cheats ---
+    - gamemode
+    - gm
+    - gmc
+    - gms
+    - gma
+    - gmsp
+    - fly
+    - flight
+    - speed
+    - god
+    - godmode
+    - heal
+    - feed
+    - repair
+    - fix
+    - nightvision
+    - nv
+    - effect
+    - potion
+    - enchant
+    - xp
+    - exp
+    - level
+
+    # --- Items / inventory ---
+    - give
+    - i
+    - item
+    - more
+    - kit
+    - kits
+    - clear
+    - clearinventory
+    - ci
+    - invsee
+    - openinv
+    - ec
+    - enderchest
+    - echest
+    - craft
+    - workbench
+    - wb
+    - anvil
+    - grindstone
+    - stonecutter
+    - smithingtable
+    - cartography
+    - loom
+    - pv
+    - playervault
+    - vault
+    - backpack
+    - bp
+    - trash
+    - disposal
+
+    # --- Visibility / info leaks (reveals roles or positions) ---
+    - vanish
+    - v
+    - hide
+    - spectate
+    - spec
+    - near
+    - seen
+    - whois
+    - locate
+    - compass
+    - track
+    - tracker
+    - glow
+    - nick
+    - nickname
+    - realname
+    - list
+    - who
+    - online
+    - players
+
+    # --- Chat / arrangements outside the game ---
+    - msg
+    - tell
+    - w
+    - whisper
+    - pm
+    - m
+    - t
+    - r
+    - reply
+    - mail
+    - email
+    - party
+    - p
+    - team
+    - guild
+    - clan
+    - friend
+    - f
+    - ignore
+    - socialspy
+
+    # --- Replay (would show the running round from the outside) ---
+    - replay
+    - rp
+    - replays
+
+    # --- Anything else that breaks the round ---
+    - kill
+    - suicide
+    - killall
+    - butcher
+    - remove
+    - summon
+    - setblock
+    - fill
+    - execute
+    - data
+    - gamerule
+    - time
+    - weather
+    - difficulty
+    - sit
+    - lay
+    - crawl
+    - afk
+    - shop
+    - ah
+    - auction
+    - market
+    - pay
+    - bal
+    - balance
+    - money
+    - eco
+    - sell
+    - buy
+    - trade
+    - plot
+    - as
+    - plugins
+    - pl
+    - help
+    - about
+    - ver
+    - version
+    - bukkit
+    - icanhasbukkit
+    - reload
+    - restart
+    - stop
+    - op
+    - deop
