@@ -53,9 +53,23 @@ public final class KaliCommands extends CommandGroup {
                     if (!"provider".equalsIgnoreCase(args[0])) {
                         throw CommandAbort.usage();
                     }
-                    if (!plugin.corpses().switchTo(args[1])) {
+                    var provider = plugin.corpses().provider(args[1]);
+                    if (provider == null) {
                         plugin.msg().send(sender, "provider-unknown",
                                 Ph.of("providers", plugin.corpses().names()));
+                        return;
+                    }
+
+                    if (!provider.isAvailable()) {
+                        plugin.msg().send(sender, "provider-unavailable", Ph.of(
+                                "provider", provider.name(),
+                                "fallback", plugin.corpses().active().name()));
+                        return;
+                    }
+                    if (!plugin.corpses().switchTo(args[1])) {
+                        plugin.msg().send(sender, "provider-unavailable", Ph.of(
+                                "provider", provider.name(),
+                                "fallback", plugin.corpses().active().name()));
                         return;
                     }
                     plugin.msg().send(sender, "provider-switched", Ph.of(

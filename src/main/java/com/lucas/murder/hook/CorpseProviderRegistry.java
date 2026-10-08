@@ -61,8 +61,12 @@ public final class CorpseProviderRegistry {
         return active;
     }
 
+    public CorpseProvider provider(String name) {
+        return name == null ? null : providers.get(name.toUpperCase(Locale.ROOT));
+    }
+
     public boolean switchTo(String name) {
-        CorpseProvider provider = providers.get(name.toUpperCase(Locale.ROOT));
+        CorpseProvider provider = provider(name);
         if (provider == null || !provider.isAvailable()) {
             return false;
         }

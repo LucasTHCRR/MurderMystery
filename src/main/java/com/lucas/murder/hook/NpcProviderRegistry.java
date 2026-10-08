@@ -58,8 +58,12 @@ public final class NpcProviderRegistry {
         return active;
     }
 
+    public NpcProvider provider(String name) {
+        return name == null ? null : providers.get(name.toUpperCase(Locale.ROOT));
+    }
+
     public boolean switchTo(String name) {
-        NpcProvider provider = providers.get(name.toUpperCase(Locale.ROOT));
+        NpcProvider provider = provider(name);
         if (provider == null || !provider.isAvailable()) {
             return false;
         }

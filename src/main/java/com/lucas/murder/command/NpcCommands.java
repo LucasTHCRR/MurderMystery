@@ -261,9 +261,17 @@ public final class NpcCommands extends CommandGroup {
             }
             case "provider" -> {
                 need(args, 2);
-                if (!plugin.npcProviders().switchTo(args[1])) {
+                var provider = plugin.npcProviders().provider(args[1]);
+                if (provider == null) {
                     plugin.msg().send(sender, "provider-unknown",
                             Ph.of("providers", plugin.npcProviders().names()));
+                    return;
+                }
+
+                if (!provider.isAvailable() || !plugin.npcProviders().switchTo(args[1])) {
+                    plugin.msg().send(sender, "provider-unavailable", Ph.of(
+                            "provider", provider.name(),
+                            "fallback", plugin.npcProviders().active().name()));
                     return;
                 }
                 int amount = plugin.npcs().respawnAll();
