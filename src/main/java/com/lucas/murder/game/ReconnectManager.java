@@ -112,6 +112,9 @@ public final class ReconnectManager {
             if (participant == null) {
                 continue;
             }
+            if (arena.state() == GameState.RUNNING && participant.alive() && participant.role() == Role.DETECTIVE) {
+                arena.dropBowAfterQuit(entry.getValue().location);
+            }
             String mode = plugin.settings().getString(arena, "reconnect.on-timeout", "DEATH");
             if ("LEAVE".equalsIgnoreCase(mode)) {
                 arena.participants().remove(participant);
