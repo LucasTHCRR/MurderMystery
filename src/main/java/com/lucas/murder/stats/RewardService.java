@@ -36,13 +36,12 @@ public final class RewardService {
         if (!enabled() || result == WinChecker.Result.ABORTED) {
             return;
         }
-        int aliveInnocents = arena.aliveOf(Role.INNOCENT).size() + arena.aliveOf(Role.DETECTIVE).size();
         for (GamePlayer participant : arena.participants()) {
             if (participant.spectator() || participant.role() == null) {
                 continue;
             }
             Player player = participant.player();
-            int amount = coins("per-game") + participant.gold() * coins("per-gold-collected");
+            int amount = coins("per-game") + participant.goldCollected() * coins("per-gold-collected");
             boolean won = switch (result) {
                 case INNOCENTS -> participant.role() != Role.MURDERER;
                 case MURDERERS -> participant.role() == Role.MURDERER;
@@ -54,7 +53,7 @@ public final class RewardService {
                     case DETECTIVE -> coins("detective-win");
                     default -> coins("innocent-win");
                 };
-                if (participant.alive() && aliveInnocents == 1 && participant.role() != Role.MURDERER) {
+                if (participant.hero()) {
                     amount += coins("hero");
                 }
             }

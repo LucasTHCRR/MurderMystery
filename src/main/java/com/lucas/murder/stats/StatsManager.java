@@ -96,7 +96,6 @@ public final class StatsManager {
             return;
         }
         long seconds = (System.currentTimeMillis() - arena.roundStart()) / 1000L;
-        int aliveInnocents = arena.aliveOf(Role.INNOCENT).size() + arena.aliveOf(Role.DETECTIVE).size();
         for (GamePlayer participant : arena.participants()) {
             if (participant.spectator() || participant.role() == null) {
                 continue;
@@ -112,7 +111,7 @@ public final class StatsManager {
             if (won) {
                 stats.addWin();
                 stats.addRoleWin(participant.role().name());
-                if (participant.alive() && aliveInnocents == 1 && participant.role() != Role.MURDERER) {
+                if (participant.hero()) {
                     stats.addHero();
                 }
             } else {

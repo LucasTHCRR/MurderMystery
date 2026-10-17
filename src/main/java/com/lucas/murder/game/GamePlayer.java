@@ -17,8 +17,10 @@ public final class GamePlayer {
     private boolean alive = true;
     private boolean spectator;
     private int gold;
+    private int goldCollected;
     private int kills;
     private boolean hasBow;
+    private boolean hero;
     private int extraLives;
     private int goldMultiplier = 1;
     private boolean goldBlocked;
@@ -87,8 +89,14 @@ public final class GamePlayer {
     }
 
     public int addGold(int amount) {
-        gold += amount * Math.max(1, goldMultiplier);
+        int added = amount * Math.max(1, goldMultiplier);
+        gold += added;
+        goldCollected += added;
         return gold;
+    }
+
+    public int goldCollected() {
+        return goldCollected;
     }
 
     public void gold(int gold) {
@@ -109,6 +117,14 @@ public final class GamePlayer {
 
     public void hasBow(boolean hasBow) {
         this.hasBow = hasBow;
+    }
+
+    public boolean hero() {
+        return hero;
+    }
+
+    public void hero(boolean hero) {
+        this.hero = hero;
     }
 
     public int extraLives() {
