@@ -121,10 +121,11 @@ public final class CleanupService {
             if (entity instanceof Player) {
                 continue;
             }
-            if (!arena.bounds().contains(entity.getLocation(), padding)) {
+            boolean ours = Tags.isTagged(entity) && arena.name().equals(Tags.arenaOf(entity));
+
+            if (!ours && !arena.bounds().contains(entity.getLocation(), padding)) {
                 continue;
             }
-            boolean ours = Tags.isTagged(entity) && arena.name().equals(Tags.arenaOf(entity));
 
             // Nie blind löschen, sonst gehen Deko und fremde NPCs verloren
             boolean remove = switch (entity) {
@@ -155,13 +156,19 @@ public final class CleanupService {
         if (world == null) {
             return 0;
         }
-        int count = 0;
+        List<String> found = new ArrayList<>();
         for (Entity entity : world.getEntities()) {
-            if (Tags.isTagged(entity) && arena.name().equals(Tags.arenaOf(entity))) {
-                count++;
+
+            if (entity.isValid() && Tags.isTagged(entity) && arena.name().equals(Tags.arenaOf(entity))) {
+                found.add(entity.getType().name() + "/" + Tags.kindOf(entity) + "@"
+                        + entity.getLocation().getBlockX() + "," + entity.getLocation().getBlockY()
+                        + "," + entity.getLocation().getBlockZ());
             }
         }
-        return count;
+        if (!found.isEmpty()) {
+            plugin.getLogger().warning("Leftovers in " + arena.name() + ": " + String.join(" ", found));
+        }
+        return found.size();
     }
 
     public int cleanupOnStartup() {

@@ -260,8 +260,8 @@ public final class ArenaCommands extends CommandGroup {
             case "murderers" -> arena.forcedMurderers(MurderCommand.number(plugin, sender, value));
             case "detectives" -> arena.forcedDetectives(MurderCommand.number(plugin, sender, value));
             case "goldrespawn" -> {
-                var overrides = plugin.configs().arenas()
-                        .createSection("arenas." + arena.name() + ".overrides");
+                var overrides = arena.overrides() != null ? arena.overrides()
+                        : plugin.configs().arenas().createSection("arenas." + arena.name() + ".overrides");
                 overrides.set("gold.respawn-seconds", MurderCommand.number(plugin, sender, value));
                 arena.overrides(overrides);
             }
