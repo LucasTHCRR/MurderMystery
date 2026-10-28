@@ -3,10 +3,7 @@ package com.lucas.murder.game;
 import com.lucas.murder.MurderPlugin;
 import com.lucas.murder.util.Ph;
 import com.lucas.murder.util.Tags;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
@@ -66,6 +63,9 @@ public final class CombatListener implements Listener {
             return;
         }
 
+        if (event.getDamager() instanceof Snowball snowball && Tags.isKind(snowball, Tags.KIND_KNIFE)) {
+            return;
+        }
         boolean projectile = event.getDamager() instanceof Projectile;
         if (projectile) {
             handleArrowHit(arena, shooter, attacker, victim, victimPlayer);
@@ -104,6 +104,10 @@ public final class CombatListener implements Listener {
     private void handleArrowHit(Arena arena, GamePlayer shooter, Player attacker,
                                 GamePlayer victim, Player victimPlayer) {
         if (victim.role() == Role.MURDERER) {
+            if (shooter.role() == Role.MURDERER) {
+                return;
+            }
+            shooter.hero(true);
             plugin.sounds().play(attacker, "kill");
             arena.kill(victim, attacker, "death-by-bow");
             return;
@@ -140,17 +144,22 @@ public final class CombatListener implements Listener {
         if (plugin.kali().hasInfiniteBow(player.getUniqueId())) {
             return;
         }
-        int seconds = plugin.settings().getInt(arena, "bow.arrow-regen-seconds", 8);
-        plugin.cooldowns().setSeconds(player.getUniqueId(), COOLDOWN_ARROW, seconds);
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> regenerateArrow(arena, player), seconds * 20L);
-    }
-
-    private void regenerateArrow(Arena arena, Player player) {
-        GamePlayer participant = arena.participant(player.getUniqueId());
-        if (participant == null || !participant.alive() || participant.spectator()) {
+        if (participant.role() != Role.DETECTIVE) {
             return;
         }
-        if (!participant.hasBow() && participant.role() != Role.DETECTIVE) {
+        int seconds = plugin.settings().getInt(arena, "bow.arrow-regen-seconds", 5);
+        long round = arena.roundStart();
+        plugin.cooldowns().setSeconds(player.getUniqueId(), COOLDOWN_ARROW, seconds);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> regenerateArrow(arena, player, round), seconds * 20L);
+    }
+
+    private void regenerateArrow(Arena arena, Player player, long round) {
+        if (arena.state() != GameState.RUNNING || arena.roundStart() != round) {
+            return;
+        }
+        GamePlayer participant = arena.participant(player.getUniqueId());
+        if (participant == null || !participant.alive() || participant.spectator()
+                || participant.role() != Role.DETECTIVE) {
             return;
         }
         player.getInventory().setItem(plugin.items().slot("arrow", 9), plugin.items().arrow());
@@ -160,6 +169,10 @@ public final class CombatListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onProjectileHit(ProjectileHitEvent event) {
+        if (event.getHitEntity() != null && Tags.isKind(event.getHitEntity(), Tags.KIND_CORPSE)) {
+            event.setCancelled(true);
+            return;
+        }
         if (event.getEntity() instanceof Snowball snowball && Tags.isKind(snowball, Tags.KIND_KNIFE)) {
             handleKnifeLanding(snowball, event);
             return;
@@ -173,50 +186,79 @@ public final class CombatListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
-        Player player = event.getPlayer();
-        ItemStack hand = event.getItem();
-        if (hand == null || !"knife".equals(Tags.read(hand, Tags.ROLE_ITEM))) {
+        if (throwKnife(event.getPlayer(), event.getItem())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInteractEntity(org.bukkit.event.player.PlayerInteractEntityEvent event) {
+        if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND
+                || event instanceof org.bukkit.event.player.PlayerInteractAtEntityEvent) {
             return;
+        }
+        if (throwKnife(event.getPlayer(), event.getPlayer().getInventory().getItemInMainHand())) {
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean throwKnife(Player player, ItemStack hand) {
+        if (hand == null || !"knife".equals(Tags.read(hand, Tags.ROLE_ITEM))) {
+            return false;
         }
         Arena arena = plugin.arenas().arenaOf(player);
         if (arena == null || arena.state() != GameState.RUNNING) {
-            return;
+            return false;
         }
-        event.setCancelled(true);
         if (!plugin.settings().feature("throwable-knife")
                 || !plugin.settings().getBoolean(arena, "knife.throwable", true)) {
-            return;
+            return true;
         }
         GamePlayer participant = arena.participant(player.getUniqueId());
         if (participant == null || participant.role() != Role.MURDERER || !participant.alive()) {
-            return;
+            return true;
         }
         double cooldown = plugin.settings().getDouble(arena, "knife.throw-cooldown", 5);
         if (!plugin.cooldowns().tryUse(player.getUniqueId(), COOLDOWN_KNIFE, (long) (cooldown * 1000D))) {
             plugin.msg().send(player, "knife-cooldown",
                     Ph.of("seconds", plugin.cooldowns().remainingSeconds(player.getUniqueId(), COOLDOWN_KNIFE)));
-            return;
+            return true;
         }
 
         ItemStack knife = hand.clone();
-        player.getInventory().remove(hand);
-        Snowball projectile = player.launchProjectile(Snowball.class, player.getLocation().getDirection().multiply(1.6D));
-        projectile.setItem(knife);
-        projectile.setShooter(player);
-        Tags.tag(projectile, arena.name(), Tags.KIND_KNIFE);
+        long round = arena.roundStart();
         plugin.sounds().play(player, "knife-throw");
         player.sendActionBar(plugin.msg().get(player, "knife-thrown", Ph.none()));
+        int windup = (int) Math.round(plugin.settings().getDouble(arena, "knife.throw-windup", 0.2) * 20D);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> launchKnife(arena, player, knife, round),
+                Math.max(0, windup));
+        return true;
+    }
 
-        int returnAfter = plugin.settings().getInt(arena, "knife.returns-after", 3);
-        if (returnAfter > 0) {
-            plugin.getServer().getScheduler().runTaskLater(plugin,
-                    () -> returnKnife(arena, player), returnAfter * 20L);
+    private void launchKnife(Arena arena, Player player, ItemStack knife, long round) {
+        if (arena.state() != GameState.RUNNING || arena.roundStart() != round || !player.isOnline()) {
+            return;
         }
+        GamePlayer participant = arena.participant(player.getUniqueId());
+        if (participant == null || !participant.alive() || participant.role() != Role.MURDERER) {
+            return;
+        }
+        Vector velocity = player.getLocation().getDirection().multiply(1.6D);
+        Snowball projectile = player.launchProjectile(Snowball.class, velocity);
+        projectile.setItem(knife);
+        projectile.setShooter(player);
+        projectile.setGravity(false);
+        Tags.tag(projectile, arena.name(), Tags.KIND_KNIFE);
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (projectile.isValid()) {
+                projectile.remove();
+            }
+        }, 60L);
     }
 
     private void handleKnifeLanding(Snowball snowball, ProjectileHitEvent event) {
@@ -236,40 +278,6 @@ public final class CombatListener implements Listener {
                 return;
             }
         }
-
-        Location location = snowball.getLocation();
-        if (location.getWorld() != null) {
-            ItemStack stack = snowball.getItem();
-            Item item = location.getWorld().dropItem(location, stack);
-            item.setVelocity(new Vector(0, 0, 0));
-            item.setPickupDelay(0);
-            item.setCanMobPickup(false);
-            Tags.tag(item, arena.name(), Tags.KIND_KNIFE);
-        }
         snowball.remove();
-    }
-
-    private void returnKnife(Arena arena, Player player) {
-        GamePlayer participant = arena.participant(player.getUniqueId());
-        if (participant == null || !participant.alive() || participant.role() != Role.MURDERER) {
-            return;
-        }
-        for (ItemStack stack : player.getInventory().getContents()) {
-            if (stack != null && "knife".equals(Tags.read(stack, Tags.ROLE_ITEM))) {
-                return;
-            }
-        }
-
-        if (arena.bounds() != null && player.getWorld() != null) {
-            for (Item item : player.getWorld().getEntitiesByClass(Item.class)) {
-                if (Tags.isKind(item, Tags.KIND_KNIFE) && arena.name().equals(Tags.arenaOf(item))) {
-                    item.remove();
-                }
-            }
-        }
-        Material skin = plugin.stats().equippedMaterial(player.getUniqueId(), "knife");
-        player.getInventory().setItem(plugin.items().slot("knife", 0), plugin.items().knife(skin));
-        plugin.sounds().play(player, "knife-return");
-        player.sendActionBar(plugin.msg().get(player, "knife-returned", Ph.none()));
     }
 }

@@ -45,17 +45,14 @@ public final class RoleAssigner {
         int total = pool.size();
         int murderers = arena.forcedMurderers() > 0
                 ? arena.forcedMurderers()
-                : Math.max(1, ceilDiv(total, plugin.settings().getInt(arena, "roles.players-per-murderer", 8)));
+                : Math.max(1, ceilDiv(total, plugin.settings().getInt(arena, "roles.players-per-murderer", 16)));
         int detectives = arena.forcedDetectives() >= 0
                 ? arena.forcedDetectives()
-                : Math.max(1, ceilDiv(total, plugin.settings().getInt(arena, "roles.players-per-detective", 8)));
+                : Math.max(1, ceilDiv(total, plugin.settings().getInt(arena, "roles.players-per-detective", 16)));
 
-        if (total < 3) {
-            murderers = 1;
-            detectives = 0;
-        }
         murderers = Math.min(murderers, Math.max(1, total - 1));
-        detectives = Math.min(detectives, Math.max(0, total - murderers - 1));
+        detectives = Math.max(total >= 2 ? 1 : 0, Math.min(detectives, Math.max(0, total - murderers - 1)));
+        detectives = Math.min(detectives, Math.max(0, total - murderers));
 
         List<GamePlayer> remaining = new ArrayList<>(pool);
         List<GamePlayer> chosenMurderers = new ArrayList<>();

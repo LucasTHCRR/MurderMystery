@@ -32,7 +32,16 @@ arrow:
 gold:
   material: GOLD_INGOT
   name: "&6Gold"
+  slot: 8                    # where the collected gold sits in the hotbar
   glowing: true
+
+map:
+  material: FILLED_MAP
+  name: "&eMap"
+  lore:
+    - "&7Shows where you are"
+    - "&7and, near the end, everyone else"
+  slot: 7
 
 wand:
   material: GOLDEN_AXE

@@ -17,7 +17,7 @@ max-players: 16
 lobby-countdown: 30
 
 # Seconds a round runs at most (0 = no limit)
-round-time: 480
+round-time: 300
 
 # Seconds between the end of a round and the arena reset
 ending-time: 10
@@ -27,20 +27,21 @@ join-cooldown-seconds: 3
 
 roles:
   # 1 murderer per started X players (8 -> 1 murderer up to 8, 2 from 9 on)
-  players-per-murderer: 8
+  players-per-murderer: 16
   # 1 detective per started X players
-  players-per-detective: 8
+  players-per-detective: 16
   # Show the role as a title when the round starts
   show-title: true
   # Whoever was the murderer last round is skipped in the first draw
   avoid-repeat-murderer: true
+  weapon-delay: 15            # seconds until knife and detective bow are handed out
 
 gold:
   respawn-seconds: 20
   # Amount of gold that automatically grants a bow
   bow-at: 10
   murderer-can-collect: true
-  murderer-gets-bow: false
+  murderer-gets-bow: true
   # Broadcasting a new bow reveals positions - keep it off
   broadcast-bow: false
   # Minimum amount of gold spawns the setup wizard asks for
@@ -49,7 +50,7 @@ gold:
   require-movement: true
 
 bow:
-  arrow-regen-seconds: 8
+  arrow-regen-seconds: 5
   # Hitting an innocent with an arrow kills the shooter (Hypixel rule)
   innocent-hit-kills-shooter: true
   # The detective drops the bow on death - whoever picks it up is the new detective
@@ -61,7 +62,7 @@ knife:
   throwable: true
   throw-cooldown: 5
   # Seconds until a thrown knife returns to the murderer (0 = never)
-  returns-after: 3
+  throw-windup: 0.2           # seconds between right click and release
   # Attack speed attribute while holding the knife (removes the 1.9 cooldown)
   attack-speed: 24.0
 
@@ -211,7 +212,7 @@ rewards:
     murderer-win: 50
     detective-win: 40
     innocent-win: 25
-    hero: 30                 # last survivor
+    hero: 30                 # killed the murderer without being one
     per-gold-collected: 1
   vault:
     enabled: false
@@ -261,12 +262,15 @@ extras:
   stats: true
   holograms: true
   # Glowing after X seconds without moving (0 = off)
-  anti-camp-seconds: 45
+  anti-camp-seconds: 0
   spectator-mode: true
   throwable-knife: true
   detective-bow-drops: true
   # Everyone alive glows during the last X seconds (0 = off)
-  last-man-standing-seconds: 60
+  last-man-standing-seconds: 0
+  reveal-at-survivors: 2       # the map shows everyone once this few non-murderers are left
+  reveal-glow: false           # let them glow at that point as well
+  murderer-speed-at-survivors: 1
   auto-join-on-world-enter: false
   disable-hunger: true
   keep-items-on-death: false
@@ -317,6 +321,20 @@ audit-log:
 # ============================================================
 # Only applies to players who are currently inside an arena or
 # its queue. Outside of a game nothing is blocked.
+# Map protection for everyone inside an arena (queue, round, dead, spectators).
+# Breaking, building, chests and every other container, armour stands,
+# item frames, buckets, fire, trampling and vehicles are always denied.
+# Only the blocks below can still be used. '*' matches the start or the end.
+# Keep it to blocks that reset themselves - an opened door stays open.
+protection:
+  allowed-blocks:
+    - "*_BUTTON"
+    - "*_PRESSURE_PLATE"
+    # - "*_DOOR"
+    # - "*_TRAPDOOR"
+    # - "*_FENCE_GATE"
+    # - LEVER
+
 blocked-commands:
   enabled: true
 

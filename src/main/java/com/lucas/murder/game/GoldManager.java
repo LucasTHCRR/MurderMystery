@@ -97,8 +97,9 @@ public final class GoldManager {
         }
 
         int needed = plugin.settings().getInt(arena, "gold.bow-at", 10);
+        int before = participant.goldCollected();
         int total = participant.addGold(1);
-        plugin.stats().addGold(participant.uuid(), 1);
+        plugin.stats().addGold(participant.uuid(), participant.goldCollected() - before);
         plugin.sounds().play(player, "gold-pickup");
         if (total < needed) {
             player.sendActionBar(plugin.msg().get(player, "gold-collected",
@@ -106,24 +107,58 @@ public final class GoldManager {
         } else {
             player.sendActionBar(plugin.msg().get(player, "gold-full", Ph.of("amount", total)));
         }
-        if (total >= needed) {
+
+        while (needed > 0 && participant.gold() >= needed && canBuyShots(participant)) {
+            participant.gold(participant.gold() - needed);
             grantBow(participant, player);
         }
+        syncItem(participant, player);
         return true;
     }
 
+    private boolean canBuyShots(GamePlayer participant) {
+        if (participant.role() == Role.DETECTIVE) {
+            return false;
+        }
+        return participant.role() != Role.MURDERER
+                || plugin.settings().getBoolean(arena, "gold.murderer-gets-bow", true);
+    }
+
     private void grantBow(GamePlayer participant, Player player) {
-        if (participant.hasBow()) {
+        if (participant.role() == Role.DETECTIVE) {
             return;
         }
         if (participant.role() == Role.MURDERER
-                && !plugin.settings().getBoolean(arena, "gold.murderer-gets-bow", false)) {
+                && !plugin.settings().getBoolean(arena, "gold.murderer-gets-bow", true)) {
+            return;
+        }
+        if (participant.hasBow()) {
+            int slot = plugin.items().slot("arrow", 9);
+            ItemStack arrows = player.getInventory().getItem(slot);
+            if (arrows != null && arrows.getType() == plugin.items().arrow().getType()) {
+                arrows.setAmount(Math.min(64, arrows.getAmount() + 1));
+            } else {
+                player.getInventory().setItem(slot, plugin.items().arrow());
+            }
+            plugin.msg().send(player, "arrow-bought");
+            plugin.sounds().play(player, "arrow-ready");
             return;
         }
         arena.giveBow(participant, true);
         if (plugin.settings().getBoolean(arena, "gold.broadcast-bow", false)) {
             arena.broadcast("bow-broadcast", Ph.of("player", player.getName()));
         }
+    }
+
+    public void syncItem(GamePlayer participant, Player player) {
+        int slot = plugin.items().slot("gold", 8);
+        if (participant.gold() <= 0) {
+            player.getInventory().setItem(slot, null);
+            return;
+        }
+        ItemStack stack = plugin.items().build("gold", Material.GOLD_INGOT);
+        stack.setAmount(Math.min(stack.getMaxStackSize(), participant.gold()));
+        player.getInventory().setItem(slot, stack);
     }
 
     public void clear() {

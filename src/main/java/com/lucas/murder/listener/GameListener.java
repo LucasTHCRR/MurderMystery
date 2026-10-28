@@ -122,7 +122,7 @@ public final class GameListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Arena arena = plugin.arenas().arenaOf(player);
@@ -222,6 +222,10 @@ public final class GameListener implements Listener {
         }
         if (Tags.has(event.getItem(), Tags.POTION_COLOR)) {
             plugin.potions().drink(arena, event.getPlayer(), event.getItem());
+
+            Player drinker = event.getPlayer();
+            plugin.getServer().getScheduler().runTask(plugin,
+                    () -> drinker.getInventory().remove(Material.GLASS_BOTTLE));
         }
     }
 
