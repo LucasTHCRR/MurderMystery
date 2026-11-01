@@ -214,39 +214,17 @@ public final class KaliManager {
             plugin.msg().send(player, "kali-role-denied");
             return;
         }
-        if (hand == null || hand.getType().isAir()) {
-            pray(arena, participant, player);
-        } else {
-            offer(arena, participant, player, hand);
-        }
+        sacrifice(arena, participant, player);
     }
 
-    private void offer(Arena arena, GamePlayer participant, Player player, ItemStack hand) {
-        ConfigurationSection gifts = root().getConfigurationSection("gifts");
-        ConfigurationSection gift = gifts == null ? null
-                : gifts.getConfigurationSection(hand.getType().name());
-        if (gift == null) {
-            plugin.msg().send(player, "kali-gift-rejected");
+    private void sacrifice(Arena arena, GamePlayer participant, Player player) {
+        UUID uuid = participant.uuid();
+        int cost = root().getInt("gold-cost", 1);
+        int cooldown = root().getInt("cooldown-seconds", 5);
+        if (participant.gold() < cost) {
+            plugin.msg().send(player, "kali-need-gold", Ph.of("cost", cost));
             return;
         }
-        int value = gift.getInt("favor", 1);
-        int max = root().getInt("max-favor", 20);
-        int total = Math.min(max, favor(participant.uuid()) + value);
-        favor.put(participant.uuid(), total);
-        if (hand.getType() == Material.GOLD_INGOT) {
-            goldGiven.merge(participant.uuid(), 1, Integer::sum);
-        }
-        hand.setAmount(hand.getAmount() - 1);
-        plugin.msg().send(player, gift.getString("message", "kali-gift-accepted"),
-                Ph.of("favor", value, "total", total));
-        plugin.sounds().play(player, "kali-gift");
-    }
-
-    private void pray(Arena arena, GamePlayer participant, Player player) {
-        UUID uuid = participant.uuid();
-        int cost = root().getInt("pray-cost", 3);
-        int own = favor(uuid);
-        int cooldown = root().getInt("cooldown-seconds", 5);
         if (!plugin.cooldowns().tryUse(uuid, "kali", cooldown * 1000L)) {
             plugin.msg().send(player, "kali-pray-cooldown",
                     Ph.of("seconds", plugin.cooldowns().remainingSeconds(uuid, "kali")));
@@ -257,29 +235,19 @@ public final class KaliManager {
             plugin.msg().send(player, "kali-pray-limit");
             return;
         }
-        if (own < cost) {
-            plugin.msg().send(player, "kali-pray-too-poor", Ph.of("cost", cost, "favor", own));
-            return;
-        }
 
-        favor.put(uuid, own - cost);
+        participant.gold(participant.gold() - cost);
+        arena.gold().syncItem(participant, player);
         prays.merge(uuid, 1, Integer::sum);
         plugin.msg().send(player, "kali-praying");
         plugin.sounds().play(player, "kali-pray");
 
-        int guaranteed = root().getInt("guaranteed-after-gold", 10);
-        boolean sure = guaranteed > 0 && goldGiven.getOrDefault(uuid, 0) >= guaranteed;
-        boolean blessing = sure || random.nextDouble() * 100 < blessingChance(own);
-        if (sure) {
-            plugin.msg().send(player, "kali-guaranteed", Ph.of("gold", goldGiven.get(uuid)));
-        }
-
+        boolean blessing = random.nextDouble() * 100 < root().getDouble("blessing-chance", 50);
         ConfigurationSection suspense = root().getConfigurationSection("suspense");
         int delay = suspense != null && suspense.getBoolean("enabled", true)
                 ? suspense.getInt("ticks", 40) : 0;
-        boolean finalBlessing = blessing;
         plugin.getServer().getScheduler().runTaskLater(plugin,
-                () -> roll(arena, participant, player, finalBlessing), Math.max(1, delay));
+                () -> roll(arena, participant, player, blessing), Math.max(1, delay));
     }
 
     public double blessingChance(int own) {

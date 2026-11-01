@@ -141,6 +141,7 @@ public final class PotionManager {
             return;
         }
         participant.gold(participant.gold() - cost);
+        arena.gold().syncItem(participant, player);
         bought.merge(player.getUniqueId(), 1, Integer::sum);
 
         Map<String, String> table = tables.get(arena.name());

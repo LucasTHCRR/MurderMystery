@@ -15,23 +15,12 @@ kali:
   # Additionally usable as an NPC: /murder npc create KALI <arena>
   npc-enabled: true
 
-  start-favor: 0
-  max-favor: 20
-  pray-cost: 3
+  # Right click the altar: pay gold, get a blessing or a curse. That is all.
+  gold-cost: 1
+  blessing-chance: 50           # percent, the rest is a curse
   cooldown-seconds: 5
-  max-prays-per-round: 0        # 0 = unlimited as long as there is favor
+  max-prays-per-round: 0        # 0 = unlimited as long as there is gold
   allow-roles: [INNOCENT, DETECTIVE, MURDERER]
-  # This much gold sacrificed guarantees a blessing
-  guaranteed-after-gold: 10
-
-  # Blessing chance per favor level, values in between are interpolated
-  favor-curve:
-    0: 10                       # 0 favor -> 10 % blessing, 90 % curse
-    3: 35
-    6: 65
-    10: 85
-    15: 95
-    20: 100
 
   particles:
     enabled: true
@@ -41,15 +30,6 @@ kali:
       mid:   {max-favor: 5,  particle: FLAME,          color: "#FF9900"}
       good:  {max-favor: 9,  particle: HAPPY_VILLAGER, color: "#FFFF33"}
       great: {max-favor: 99, particle: HAPPY_VILLAGER, color: "#33FF33"}
-
-  # What Kali accepts as an offering
-  gifts:
-    GOLD_INGOT: {favor: 1, message: kali-gift-accepted}
-    FILLED_MAP: {favor: 5, message: kali-gift-kindly}
-    MAP:        {favor: 5, message: kali-gift-kindly}
-    BOW:        {favor: 5, message: kali-gift-kindly}
-    ARROW:      {favor: 2, message: kali-gift-accepted}
-    IRON_SWORD: {favor: 5, message: kali-gift-kindly}
 
   suspense:
     enabled: true
