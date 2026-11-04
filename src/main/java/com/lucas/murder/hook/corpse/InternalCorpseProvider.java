@@ -1,17 +1,14 @@
 package com.lucas.murder.hook.corpse;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
 import com.lucas.murder.MurderPlugin;
 import com.lucas.murder.hook.CorpseProvider;
 import com.lucas.murder.util.Tags;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.util.EulerAngle;
+import org.bukkit.entity.Pose;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,7 @@ import java.util.List;
 public final class InternalCorpseProvider implements CorpseProvider {
 
     private final MurderPlugin plugin;
-    private final List<ArmorStand> spawned = new ArrayList<>();
+    private final List<Entity> spawned = new ArrayList<>();
 
     public InternalCorpseProvider(MurderPlugin plugin) {
         this.plugin = plugin;
@@ -40,51 +37,43 @@ public final class InternalCorpseProvider implements CorpseProvider {
         if (location.getWorld() == null) {
             return null;
         }
-        ArmorStand stand = location.getWorld().spawn(location, ArmorStand.class, entity -> {
-            entity.setGravity(false);
+        boolean skin = plugin.settings().getBoolean(null, "corpses.use-victim-skin", true);
+        Location spot = location.clone();
+        spot.setPitch(0F);
+        Mannequin body = location.getWorld().spawn(spot, Mannequin.class, entity -> {
+            if (skin) {
+                entity.setProfile(ResolvableProfile.resolvableProfile(victim.getPlayerProfile()));
+            }
+            entity.setPose(Mannequin.validPoses().contains(Pose.SLEEPING) ? Pose.SLEEPING : Pose.SWIMMING, true);
+            entity.setImmovable(true);
             entity.setInvulnerable(true);
-            entity.setBasePlate(false);
-            entity.setArms(true);
-            entity.setMarker(false);
+            entity.setAI(false);
+            entity.setSilent(true);
             entity.setCollidable(false);
             entity.setCustomNameVisible(false);
+            entity.setDescription(null);
             entity.setPersistent(false);
-
-            entity.setBodyPose(new EulerAngle(Math.toRadians(90), 0, 0));
-            entity.setHeadPose(new EulerAngle(Math.toRadians(90), 0, 0));
         });
-        if (plugin.settings().getBoolean(null, "corpses.use-victim-skin", true)) {
-            ItemStack head = new ItemStack(Material.PLAYER_HEAD);
-            if (head.getItemMeta() instanceof SkullMeta meta) {
-                PlayerProfile profile = victim.getPlayerProfile();
-                meta.setPlayerProfile(profile);
-                head.setItemMeta(meta);
-            }
-            EntityEquipment equipment = stand.getEquipment();
-            if (equipment != null) {
-                equipment.setHelmet(head);
-            }
-        }
-        Tags.tag(stand, "", Tags.KIND_CORPSE);
-        spawned.add(stand);
+        Tags.tag(body, "", Tags.KIND_CORPSE);
+        spawned.add(body);
         if (seconds > 0) {
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> remove(stand), seconds * 20L);
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> remove(body), seconds * 20L);
         }
-        return stand;
+        return body;
     }
 
     @Override
     public void remove(Object handle) {
-        if (handle instanceof ArmorStand stand) {
-            stand.remove();
-            spawned.remove(stand);
+        if (handle instanceof Entity body) {
+            body.remove();
+            spawned.remove(body);
         }
     }
 
     @Override
     public void removeAll() {
-        for (ArmorStand stand : new ArrayList<>(spawned)) {
-            stand.remove();
+        for (Entity body : new ArrayList<>(spawned)) {
+            body.remove();
         }
         spawned.clear();
     }
