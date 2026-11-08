@@ -98,7 +98,7 @@ public final class ZoneTicker {
                 default -> {
                 }
             }
-        } else if (moved) {
+        } else if (moved && (arena.bounds() == null || arena.bounds().contains(location))) {
             participant.lastSafeLocation(location.clone());
         }
 
@@ -124,7 +124,11 @@ public final class ZoneTicker {
             return;
         }
         player.sendActionBar(plugin.msg().get(player, "border-warning", Ph.of("seconds", remaining)));
-        pushBackToBounds(arena, participant, player);
+        if (location.getY() >= bounds.minY()) {
+            // Unter der Map entscheidet die Void-Regel, ein Schub nach oben ließe sie schweben
+
+            pushBackToBounds(arena, participant, player);
+        }
     }
 
     private void pushBackToBounds(Arena arena, GamePlayer participant, Player player) {
@@ -133,7 +137,10 @@ public final class ZoneTicker {
             safeSpot = arena.bounds().center(player.getWorld());
         }
         if (safeSpot != null) {
-            player.setVelocity(safeSpot.toVector().subtract(player.getLocation().toVector()).normalize().multiply(0.6D));
+            org.bukkit.util.Vector push = safeSpot.toVector().subtract(player.getLocation().toVector());
+            if (push.lengthSquared() > 1.0E-4D) {
+                player.setVelocity(push.normalize().multiply(0.6D));
+            }
         }
         plugin.sounds().play(player, "zone-warning");
     }

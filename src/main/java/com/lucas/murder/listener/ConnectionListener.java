@@ -53,6 +53,9 @@ public final class ConnectionListener implements Listener {
         if (arena.state() == GameState.RUNNING && participant.alive() && !participant.spectator()) {
             participant.alive(false);
             arena.broadcast("death-quit", Ph.of("player", player.getName()));
+            if (participant.role() == Role.DETECTIVE) {
+                arena.dropBowAfterQuit(player.getLocation());
+            }
 
             if (participant.role() == Role.MURDERER) {
                 plugin.getLogger().fine("Murderer " + player.getName() + " logged out - counted as dead.");
