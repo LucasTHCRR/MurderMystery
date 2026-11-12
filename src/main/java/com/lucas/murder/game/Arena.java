@@ -10,6 +10,7 @@ import com.lucas.murder.util.PlayerSnapshot;
 import com.lucas.murder.util.Tags;
 import com.lucas.murder.util.Text;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.title.Title;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -58,6 +59,7 @@ public final class Arena implements Overridable {
     private GameState state = GameState.DISABLED;
     private final Map<UUID, GamePlayer> participants = new LinkedHashMap<>();
     private final GoldManager gold;
+    private final ArenaMap map;
     private BukkitTask ticker;
     private int tickCounter;
     private int countdown;
@@ -69,12 +71,15 @@ public final class Arena implements Overridable {
     private String lastDetectiveName = "-";
     private String replayId;
     private int spawnRotation;
+    private boolean weaponsGiven;
+    private boolean revealed;
 
     public Arena(MurderPlugin plugin, String name) {
         this.plugin = plugin;
         this.name = name;
         this.displayName = name;
         this.gold = new GoldManager(plugin, this);
+        this.map = new ArenaMap(plugin, this);
     }
 
     public String name() {
@@ -268,6 +273,10 @@ public final class Arena implements Overridable {
         return replayId;
     }
 
+    public boolean revealed() {
+        return revealed;
+    }
+
     public long roundStart() {
         return roundStart;
     }
@@ -406,6 +415,7 @@ public final class Arena implements Overridable {
             return;
         }
         boolean wasAlive = participant.alive() && !participant.spectator();
+        Location quitLocation = player.getLocation().clone();
         plugin.cleanup().resetPlayer(this, participant, player);
 
         if (!silent) {
@@ -426,6 +436,9 @@ public final class Arena implements Overridable {
         }
         if (state == GameState.RUNNING && wasAlive) {
             participant.alive(false);
+            if (participant.role() == Role.DETECTIVE) {
+                dropDetectiveBow(bowDropLocation(quitLocation, false));
+            }
             if (!plugin.settings().getBoolean(this, "nametags.hide-in-death-messages", false)) {
                 broadcast("death-quit", Ph.of("player", player.getName()));
             }
@@ -458,10 +471,9 @@ public final class Arena implements Overridable {
             player.setAllowFlight(true);
             player.setFlying(true);
         }
-        player.getInventory().setItem(plugin.items().slot("spectator.teleporter", 0),
-                plugin.items().build("spectator.teleporter", Material.COMPASS));
-        player.getInventory().setItem(plugin.items().slot("spectator.leave", 8),
-                plugin.items().build("spectator.leave", Material.RED_BED));
+
+        player.sendMessage(plugin.msg().get(player, "spectator-controls", Ph.none())
+                .clickEvent(ClickEvent.runCommand("/murder leave")));
         plugin.nametags().apply(this, player);
     }
 
@@ -493,6 +505,8 @@ public final class Arena implements Overridable {
             return;
         }
         state(GameState.RUNNING);
+        weaponsGiven = false;
+        revealed = false;
         countdown = 0;
         timeLeft = roundTime();
         roundStart = System.currentTimeMillis();
@@ -509,6 +523,8 @@ public final class Arena implements Overridable {
 
         plugin.roles().assign(this);
         assignAliases(playing);
+        lastMurdererName = namesOf(playing, Role.MURDERER);
+        lastDetectiveName = namesOf(playing, Role.DETECTIVE);
 
         for (GamePlayer participant : playing) {
             Player player = participant.player();
@@ -517,20 +533,34 @@ public final class Arena implements Overridable {
             }
             participant.alive(true);
             participant.resetJoinTime();
+            plugin.votes().clear(participant.uuid());
             PlayerSnapshot.wipe(player);
             player.setGameMode(GameMode.ADVENTURE);
             player.teleport(nextSpawn());
             participant.lastSafeLocation(player.getLocation());
-            equip(participant, player);
+            player.getInventory().clear();
+            ItemStack mapItem = map.item();
+            if (mapItem != null) {
+                player.getInventory().setItem(plugin.items().slot("map", 7), mapItem);
+            }
             announceRole(participant, player);
             plugin.nametags().apply(this, player);
         }
 
+        if (name.equalsIgnoreCase(plugin.votes().forced() == null ? "" : plugin.votes().forced())) {
+            plugin.votes().force(null);
+        }
         gold.fill();
         plugin.kali().startRound(this);
         plugin.potions().startRound(this);
         plugin.sounds().play(onlinePlayers(), "game-start");
         broadcast("game-start");
+        int delay = plugin.settings().getInt(this, "roles.weapon-delay", 15);
+        if (delay > 0) {
+            broadcast("weapons-soon", Ph.of("seconds", delay));
+        } else {
+            handOutWeapons();
+        }
         broadcast("map-info", Ph.of("map", displayName(), "author", author()));
         plugin.boards().refresh(this);
 
@@ -572,8 +602,31 @@ public final class Arena implements Overridable {
         return location.clone();
     }
 
+    private static String namesOf(List<GamePlayer> playing, Role role) {
+        List<String> names = new ArrayList<>();
+        for (GamePlayer participant : playing) {
+            if (participant.role() == role) {
+                names.add(participant.name());
+            }
+        }
+        return names.isEmpty() ? "-" : String.join(", ", names);
+    }
+
+    private void handOutWeapons() {
+        weaponsGiven = true;
+        for (GamePlayer participant : participants.values()) {
+            Player player = participant.player();
+            if (player == null || !participant.alive() || participant.spectator()) {
+                continue;
+            }
+            if (participant.role() == Role.MURDERER || participant.role() == Role.DETECTIVE) {
+                equip(participant, player);
+                plugin.msg().send(player, "weapon-received-" + participant.role().lower());
+            }
+        }
+    }
+
     private void equip(GamePlayer participant, Player player) {
-        player.getInventory().clear();
         if (participant.role() == Role.MURDERER) {
             Material skin = plugin.stats().equippedMaterial(participant.uuid(), "knife");
             player.getInventory().setItem(plugin.items().slot("knife", 0), plugin.items().knife(skin));
@@ -636,6 +689,26 @@ public final class Arena implements Overridable {
         plugin.sounds().playAt(location, "bow-dropped");
     }
 
+    private Location bowDropLocation(Location death, boolean hazard) {
+        int voidY = plugin.settings().getInt(this, "death-rules.void-y", 0);
+        boolean unreachable = death == null || death.getWorld() == null || hazard || death.getY() <= voidY + 1;
+        if (!unreachable) {
+            return death;
+        }
+        org.bukkit.World world = bounds == null ? null : org.bukkit.Bukkit.getWorld(bounds.world());
+        if (world != null) {
+            Location center = bounds.center(world);
+            int top = Math.min(bounds.maxY(), world.getHighestBlockYAt(center.getBlockX(), center.getBlockZ()));
+            center.setY(top + 1);
+            return center;
+        }
+        return spectatorSpawn != null ? spectatorSpawn.clone() : death;
+    }
+
+    public void dropBowAfterQuit(Location quitLocation) {
+        dropDetectiveBow(bowDropLocation(quitLocation, false));
+    }
+
     public boolean pickupBow(Player player, Item item) {
         GamePlayer participant = participant(player.getUniqueId());
         if (participant == null || !participant.alive() || participant.spectator()) {
@@ -677,8 +750,8 @@ public final class Arena implements Overridable {
             broadcast(messageKey, Ph.of("player", victim.name()));
         }
 
-        if (victim.role() == Role.DETECTIVE || victim.hasBow()) {
-            dropDetectiveBow(deathLocation);
+        if (victim.role() == Role.DETECTIVE) {
+            dropDetectiveBow(bowDropLocation(deathLocation, killer == null && !"death-generic".equals(messageKey)));
         }
         if (deathLocation != null && plugin.settings().feature("corpses")) {
             plugin.corpses().spawn(this, victim, deathLocation);
@@ -734,14 +807,6 @@ public final class Arena implements Overridable {
         state(GameState.ENDING);
         endingLeft = plugin.settings().getInt(this, "ending-time", 10);
 
-        for (GamePlayer participant : participants.values()) {
-            if (participant.role() == Role.MURDERER) {
-                lastMurdererName = participant.name();
-            } else if (participant.role() == Role.DETECTIVE) {
-                lastDetectiveName = participant.name();
-            }
-        }
-
         if (outcome != WinChecker.Result.ABORTED) {
             switch (outcome) {
                 case INNOCENTS -> broadcast("win-innocents");
@@ -793,7 +858,7 @@ public final class Arena implements Overridable {
             if (topKiller == null || participant.kills() > topKiller.kills()) {
                 topKiller = participant;
             }
-            if (topGold == null || participant.gold() > topGold.gold()) {
+            if (topGold == null || participant.goldCollected() > topGold.goldCollected()) {
                 topGold = participant;
             }
         }
@@ -803,10 +868,10 @@ public final class Arena implements Overridable {
                     "name", plugin.msg().rawString("summary-most-kills"),
                     "value", topKiller.name() + " (" + topKiller.kills() + ")"));
         }
-        if (topGold != null && topGold.gold() > 0) {
+        if (topGold != null && topGold.goldCollected() > 0) {
             broadcast("summary-line", Ph.of(
                     "name", plugin.msg().rawString("summary-most-gold"),
-                    "value", topGold.name() + " (" + topGold.gold() + ")"));
+                    "value", topGold.name() + " (" + topGold.goldCollected() + ")"));
         }
         long seconds = (System.currentTimeMillis() - roundStart) / 1000L;
         broadcast("summary-line", Ph.of(
@@ -907,6 +972,11 @@ public final class Arena implements Overridable {
     }
 
     private void tickRunning() {
+        if (!weaponsGiven && System.currentTimeMillis() - roundStart
+                >= plugin.settings().getInt(this, "roles.weapon-delay", 15) * 1000L) {
+            handOutWeapons();
+        }
+        tickEndgame();
         gold.tick();
         plugin.kali().tick(this);
         plugin.potions().tick(this);
@@ -937,7 +1007,37 @@ public final class Arena implements Overridable {
                 continue;
             }
             boolean camping = seconds > 0 && now - participant.lastMove() > seconds * 1000L;
-            player.setGlowing(camping || endgame);
+            boolean revealGlow = revealed && plugin.settings().getBoolean(this, "extras.reveal-glow", false);
+            player.setGlowing(camping || endgame || revealGlow);
+        }
+    }
+
+    private void tickEndgame() {
+        int revealAt = plugin.settings().getInt(this, "extras.reveal-at-survivors", 2);
+        int speedAt = plugin.settings().getInt(this, "extras.murderer-speed-at-survivors", 1);
+        int survivors = aliveOf(Role.INNOCENT).size() + aliveOf(Role.DETECTIVE).size();
+        if (revealAt > 0 && survivors <= revealAt) {
+            if (!revealed) {
+                revealed = true;
+                broadcast("players-revealed");
+            }
+            if (plugin.settings().getBoolean(this, "extras.reveal-glow", false)) {
+                for (GamePlayer participant : participants.values()) {
+                    Player player = participant.player();
+                    if (player != null && participant.alive() && !participant.spectator()) {
+                        player.setGlowing(true);
+                    }
+                }
+            }
+        }
+        if (speedAt > 0 && survivors <= speedAt) {
+            for (GamePlayer murderer : aliveOf(Role.MURDERER)) {
+                Player player = murderer.player();
+                if (player != null) {
+                    player.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                            org.bukkit.potion.PotionEffectType.SPEED, 40, 0, false, false, true));
+                }
+            }
         }
     }
 
@@ -1083,6 +1183,16 @@ public final class Arena implements Overridable {
         section.set("lobby", lobby == null ? null : Locations.toMap(lobby));
         section.set("altar", altar == null ? null : Locations.toMap(altar));
         section.set("bounds", bounds == null ? null : bounds.toMap(true));
+
+        if (overrides != null && !overrides.getKeys(false).isEmpty()) {
+            ConfigurationSection copy = section.createSection("overrides");
+            for (String key : overrides.getKeys(true)) {
+                if (!overrides.isConfigurationSection(key)) {
+                    copy.set(key, overrides.get(key));
+                }
+            }
+            overrides = copy;
+        }
 
         section.set("zones", null);
         if (!zones.isEmpty()) {

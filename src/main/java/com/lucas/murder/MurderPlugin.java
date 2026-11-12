@@ -177,6 +177,7 @@ public final class MurderPlugin extends JavaPlugin {
 
     private void registerListeners() {
         var manager = getServer().getPluginManager();
+        manager.registerEvents(new com.lucas.murder.listener.ProtectionListener(this), this);
         manager.registerEvents(new GameListener(this), this);
         manager.registerEvents(new CombatListener(this), this);
         manager.registerEvents(deathRules, this);
