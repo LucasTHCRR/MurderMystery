@@ -6,23 +6,33 @@ Built for [dc.gg/paperstream](https://dc.gg/paperstream).
 
 ## How it plays
 
+Plays like Murder Mystery Classic on Hypixel.
+
 | Role | Count | Gear | Goal |
 |---|---|---|---|
-| Innocent | the rest | nothing (bow at 10 gold) | survive, collect gold, expose the murderer |
-| Detective | 1 per 8 players | bow + one regenerating arrow | shoot the murderer, protect the innocents |
-| Murderer | 1 per 8 players | knife, one hit kills | kill everyone without getting caught |
+| Innocent | the rest | nothing (bow + one arrow per 10 gold) | survive, collect gold, expose the murderer |
+| Detective | 1 per 16 players | bow, an arrow every 5 seconds | shoot the murderer, protect the innocents |
+| Murderer | 1 per 16 players | knife, one hit kills, throwable | kill everyone without getting caught |
 
-Gold lies at fixed spawn points and respawns on a timer. At 10 gold a player
-automatically gets a bow — no shop, no menu. The murderer collects gold too, for
-cover, but never receives a bow. If the detective dies their bow drops, and
-whoever picks it up becomes the new detective.
+Roles are announced at the start, the knife and the detective bow arrive after
+15 seconds. A round lasts 5 minutes; if time runs out, the innocents win.
 
-Hitting an innocent with an arrow kills the shooter. That is the only thing
-keeping people from firing at random.
+The knife can be thrown with right click: one second wind-up, then it flies in a
+straight line. It never leaves the murderer's hand, there is a 5 second cooldown.
 
-**Names are hidden above the heads during a round.** If you can read names across
-the map, nobody has to pay attention to behaviour any more and the whole guessing
-game falls apart.
+Gold lies at fixed spawn points and respawns on a timer. Every 10 gold buy one
+shot: the first time a bow with one arrow, after that one more arrow. This goes
+for the murderer too. Only the detective's bow reloads on its own.
+
+If the detective dies or quits, their bow drops and whoever picks it up becomes the
+new detective. If the detective died in water, lava or the void, the bow lands in
+the middle of the map instead. Whoever kills the murderer without being one is the
+Hero.
+
+Hitting an innocent with an arrow kills the shooter too.
+
+With two survivors left everyone starts glowing, with one left the murderer gets
+Speed I.
 
 ## Requirements
 
@@ -170,7 +180,7 @@ yourself out of your own game.
 - **Mystery potion** — brewing stations sell an unknown potion for 1 gold. Same colour means same effect, but only inside that round. The mapping is rolled fresh every game and lives server side only.
 - **Cosmetics** — knife skins, bow skins, death effects, paid with coins. Never gameplay relevant.
 - **Stats and levels** — wins, kills, K/D, gold, playtime, coins, leaderboards for NPC holograms.
-- **Map voting**, **join signs**, **spectator mode**, **anti camping**, **last man standing glow**.
+- **Map voting**, **join signs**, **spectator mode**; anti camping glow and hidden name tags can be switched on in `config.yml`.
 
 ## Optional integrations
 
