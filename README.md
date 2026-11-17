@@ -1,6 +1,6 @@
 # MurderMystery
 
-Traditional Murder Mystery for Paper 1.21.x — innocent, detective, murderer, no special roles.
+Traditional Murder Mystery for Paper 1.21 to 26.3: innocent, detective, murderer, no special roles.
 
 Built for [dc.gg/paperstream](https://dc.gg/paperstream).
 
@@ -36,7 +36,7 @@ Speed I.
 
 ## Requirements
 
-- Paper 1.21.x
+- Paper or Purpur 1.21 to 26.3
 - Java 21
 
 No hard dependencies. Everything below is optional and detected automatically.
@@ -59,13 +59,13 @@ After that you walk through the map and press `[SET HERE]` in chat. It knows
 itself whether it is collecting spawns, gold spawns or the altar, and says how
 many are still missing. Two steps need more than standing still:
 
-- **Bounds** — `/murder wand`, left click one corner, right click the other, then `[SET HERE]`
-- **Spawns and gold** — these collect several points and advance on their own once the target is reached
+- **Bounds**: `/murder wand`, left click one corner, right click the other, then `[SET HERE]`
+- **Spawns and gold**: these collect several points and advance on their own once the target is reached
 
 Steps 8–12 (zones, Kali altar, brewing stations, settings, join NPC) are optional.
 Finish with `/murder setup finish`, which validates and enables the arena.
 
-Everything the wizard does can also be typed by hand — it reads the real state
+Everything the wizard does can also be typed by hand, it reads the real state
 out of `arenas.yml` instead of counting along, so the two never get out of sync.
 
 ## Commands
@@ -121,7 +121,7 @@ Nothing is hard coded. No text, no number, no item, no sound, no particle.
 | `messages.yml` | every line of text, including the in-game help |
 | `arenas.yml` | arenas, spawns, zones, per arena overrides (written at runtime) |
 | `npcs.yml` | every NPC (written at runtime) |
-| `scoreboard.yml` | sidebar, bossbar, actionbar, tablist — per state and per role |
+| `scoreboard.yml` | sidebar, bossbar, actionbar, tablist, per state and per role |
 | `items.yml` | every item |
 | `sounds.yml` | every event with a sound, each one switchable |
 | `gui.yml` | menu layouts and click actions |
@@ -158,7 +158,7 @@ Select with the wand, then `/murder zone add <arena> <name> <type>`.
 | `SAFE` | lifts the global rules, e.g. a decorative pond |
 
 On top of that there are global rules for water, lava, fire, void, fall damage,
-suffocation, cactus and a height limit — all configurable, all liftable with a
+suffocation, cactus and a height limit, all configurable, all liftable with a
 `SAFE` zone.
 
 A death in a zone has no killer. If the murderer drowns, the innocents win
@@ -176,11 +176,31 @@ yourself out of your own game.
 
 ## Extras
 
-- **Kali** — sacrifice items at an altar to raise your favor, then pray. High favor means a blessing, low favor a curse. Investing gold lowers the risk. 9 blessings, 14 curses, all chances configurable.
-- **Mystery potion** — brewing stations sell an unknown potion for 1 gold. Same colour means same effect, but only inside that round. The mapping is rolled fresh every game and lives server side only.
-- **Cosmetics** — knife skins, bow skins, death effects, paid with coins. Never gameplay relevant.
-- **Stats and levels** — wins, kills, K/D, gold, playtime, coins, leaderboards for NPC holograms.
+- **Kali**: sacrifice items at an altar to raise your favor, then pray. High favor means a blessing, low favor a curse. Investing gold lowers the risk. 9 blessings, 14 curses, all chances configurable.
+- **Mystery potion**: brewing stations sell an unknown potion for 1 gold. Same colour means same effect, but only inside that round. The mapping is rolled fresh every game and lives server side only.
+- **Cosmetics**: knife skins, bow skins, death effects, paid with coins. Never gameplay relevant.
+- **Stats and levels**: wins, kills, K/D, gold, playtime, coins, leaderboards for NPC holograms.
 - **Map voting**, **join signs**, **spectator mode**; anti camping glow and hidden name tags can be switched on in `config.yml`.
+
+## Traps
+
+Place a lever or button, select the area that should open with `/murder pos1` and `/murder pos2`, look at the lever and run:
+
+```
+/murder trap create <name> [all|innocents|murderers]
+```
+
+Without a mode everybody may use it. Pulling the lever costs gold (`/murder trap cost`), opens the floor for a few seconds (`/murder trap duration`) and then the trap needs a break (`/murder trap cooldown`). Deaths caused by the open trap count as kills for the player who pulled it.
+
+## Developer API
+
+```java
+Role role = MurderMysteryAPI.getRole(player);
+boolean alive = MurderMysteryAPI.isAlive(player);
+MurderMysteryAPI.join(player, "manor");
+```
+
+Events in `dev.paperstream.murder.api.event`: `MurderGameStartEvent`, `MurderGameEndEvent`, `MurderPlayerKillEvent`, `MurderGoldCollectEvent` and `MurderTrapTriggerEvent`. The last three can be cancelled.
 
 ## Optional integrations
 
@@ -197,7 +217,7 @@ Detected at runtime, all optional:
 `/murder hooks` shows what was found and which provider is active.
 
 Without an NPC plugin the built-in fallback takes over. It is an armour stand
-with a skinned head rather than a full player model — install Citizens if you
+with a skinned head rather than a full player model. Install Citizens if you
 want the real thing.
 
 ## Building

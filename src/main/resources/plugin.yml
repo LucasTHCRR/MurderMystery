@@ -1,6 +1,6 @@
 name: MurderMystery
 version: '${version}'
-main: com.lucas.murder.MurderPlugin
+main: dev.paperstream.murder.MurderPlugin
 api-version: '1.21'
 author: LucasTHCR
 website: dc.gg/paperstream

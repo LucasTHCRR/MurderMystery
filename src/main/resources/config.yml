@@ -68,6 +68,8 @@ knife:
 
 death-rules:
   water: true
+  # Water only kills from this depth on, shallow water like fountains is safe
+  water-min-depth: 3
   lava: true
   fire: true
   void-y: 0
@@ -168,6 +170,11 @@ corpses:
     - INTERNAL
   seconds: 30
   use-victim-skin: true
+  # Last chat message of the victim above the corpse
+  last-words:
+    enabled: true
+    max-length: 40
+    height: 0.9
   name: "&8x"
   show-name: false
   # NEVER true - it would reveal the detective
