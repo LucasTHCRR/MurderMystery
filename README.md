@@ -210,4 +210,4 @@ Output lands in `build/libs/`.
 
 ## License
 
-All rights reserved.
+Licensed under the [GNU General Public License v3.0](LICENSE).
